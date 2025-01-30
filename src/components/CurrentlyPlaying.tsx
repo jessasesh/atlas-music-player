@@ -4,7 +4,6 @@ import SongTitle from "./SongTitle";
 import PlayControls from "./PlayControls";
 import VolumeControls from "./VolumeControls";
 import AudioPlayer from "./AudioPlayer";
-import Playlist from "./Playlist";
 
 type PlaylistSong = {
   id: string;
@@ -24,10 +23,10 @@ type SongDetails = {
 
 type CurrentlyPlayingProps = {
   setCurrentSongId: (id: string | null) => void;
+  setPlaylist: (playlist: PlaylistSong[]) => void;
 };
 
-const CurrentlyPlaying: React.FC<CurrentlyPlayingProps> = ({ setCurrentSongId }) => {
-  const [playlist, setPlaylist] = useState<PlaylistSong[]>([]);
+const CurrentlyPlaying: React.FC<CurrentlyPlayingProps> = ({ setCurrentSongId, setPlaylist }) => {
   const [currentSong, setCurrentSong] = useState<SongDetails | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [volume, setVolume] = useState<number>(0.5);
@@ -65,30 +64,17 @@ const CurrentlyPlaying: React.FC<CurrentlyPlayingProps> = ({ setCurrentSongId })
   };
 
   const prevSong = () => {
-    if (!currentSong || playlist.length === 0) return;
-    const currentIndex = playlist.findIndex((song) => song.id === currentSong.id);
-    if (currentIndex > 0) {
-      fetchSongDetails(playlist[currentIndex - 1].id);
-    }
+    if (!currentSong) return;
+    setCurrentSongId(currentSong.id);
   };
 
   const nextSong = () => {
-    if (!currentSong || playlist.length === 0) return;
-    const currentIndex = playlist.findIndex((song) => song.id === currentSong.id);
-
-    if (isShuffle) {
-      const randomIndex = Math.floor(Math.random() * playlist.length);
-      fetchSongDetails(playlist[randomIndex].id);
-    } else if (currentIndex < playlist.length - 1) {
-      fetchSongDetails(playlist[currentIndex + 1].id);
-    } else if (isRepeat) {
-      fetchSongDetails(playlist[0].id);
-    }
+    if (!currentSong) return;
+    setCurrentSongId(currentSong.id);
   };
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between p-6 bg-gray-900 rounded-lg">
-      <div className="sm:w-1/2 xl:w-2/5 sm:mr-2 xl:ml-20">
+    <div className="sm:w-1/2 xl:w-2/5 sm:mr-2 xl:ml-20 p-6 bg-gray-900 rounded-lg">
         <CoverArt song={currentSong} />
         <SongTitle song={currentSong} />
         <PlayControls
@@ -115,11 +101,6 @@ const CurrentlyPlaying: React.FC<CurrentlyPlayingProps> = ({ setCurrentSongId })
           />
         )}
       </div>
-
-      {playlist.length > 0 && (
-        <Playlist playlist={playlist} currentSongId={currentSong?.id || null} onSelectSong={fetchSongDetails} />
-      )}
-    </div>
   );
 };
 
